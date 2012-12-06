@@ -863,7 +863,7 @@ bool AuthSocket::_HandleRealmList()
         pkt << i->second.icon;
         if (_expversion & (POST_BC_EXP_FLAG | POST_WOTLK_EXP_FLAG))
             pkt << lock;
-        pkt << i->second.color;
+        pkt << uint8(i->second.flag);                       // RealmFlags
         pkt << i->first;
         pkt << i->second.address;
         pkt << i->second.populationLevel;
@@ -873,6 +873,15 @@ bool AuthSocket::_HandleRealmList()
             pkt << (uint8) 0x2C;
         else
             pkt << (uint8) 0x0;
+
+        if (i->second.flag & REALM_FLAG_SPECIFYBUILD)
+        {
+            // TODO: Make this customizable
+            pkt << uint8(3);
+            pkt << uint8(3);
+            pkt << uint8(5);
+            pkt << uint16(12340);
+        }
 
         ++RealmListSize;
     }
