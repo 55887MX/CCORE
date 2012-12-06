@@ -69,7 +69,6 @@ void AddSC_currency_commandscript();
 void AddSC_quest_commandscript ();
 void AddSC_reload_commandscript ();
 void AddSC_credits_commandscript ();
-void AddSC_mcwow_commandscript();
 
 #ifdef SCRIPTS
 //world
@@ -740,7 +739,6 @@ void AddCommandScripts ()
     AddSC_currency_commandscript();
     AddSC_quest_commandscript();
     AddSC_reload_commandscript();
-    AddSC_mcwow_commandscript();
 }
 
 void AddWorldScripts ()
