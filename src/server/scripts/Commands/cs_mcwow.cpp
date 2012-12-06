@@ -8,7 +8,7 @@ public:
             CommandScript("mcwow_commandscript")
     {
     }
-
+/*
     static bool HandleBugQuestCommand (ChatHandler* handler, const char* args)
     {
         if (!*args)
@@ -95,6 +95,7 @@ public:
 
         return commandTable;
     }
+	*/
 };
 
 void AddSC_mcwow_commandscript()
