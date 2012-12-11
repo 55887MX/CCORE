@@ -22,48 +22,92 @@
 #include"ScriptPCH.h"
 #include"bastion_of_twilight.h"
 
-class boss_chogall: public CreatureScript
-{
+enum eSpells {
+    SPELL_FURY_OF_CHOGALL = 82524,
+    SPELL_FLAMES_ORDERS = 81171,
+    SPELL_SHADOWS_ORDERS = 81556
+};
+
+enum eNPCs {
+    NPC_SHADOW_PORTAL = 43603,
+    NPC_FIRE_PORTAL = 43393,
+    NPC_FIRE_ELEMENTAR = 43406,
+    NPC_SHADOW_BIEST = 43592
+};
+
+class boss_chogall : public CreatureScript {
 public:
-    boss_chogall () :
-            CreatureScript("boss_chogall")
-    {
+
+    boss_chogall() :
+    CreatureScript("boss_chogall") {
     }
 
-    CreatureAI* GetAI (Creature* creature) const
-    {
+    CreatureAI* GetAI(Creature* creature) const {
         return new boss_chogallAI(creature);
     }
 
-    struct boss_chogallAI: public ScriptedAI
-    {
-        boss_chogallAI (Creature* creature) :
-                ScriptedAI(creature)
-        {
+    struct boss_chogallAI : public ScriptedAI {
+
+        boss_chogallAI(Creature * creature) :
+        ScriptedAI(creature) {
             pInstance = creature->GetInstanceScript();
         }
 
         InstanceScript* pInstance;
+        Creature *firePortal;
+        Creature *shadowPortal;
+        uint32 uiFuryOfChogallTimer;
+        uint32 uiPortalTimer;
+        uint32 uiAddCounter;
+        uint32 uiEnrageTimer;
 
-        void Reset ()
-        {
+        void Reset() {
+            uiFuryOfChogallTimer = 15 * IN_MILLISECONDS;
+            uiPortalTimer = 10*IN_MILLISECONDS;
+            uiAddCounter = 0;
+            uiEnrageTimer = 600*IN_MILLISECONDS;
         }
 
-        void EnterCombat (Unit* /*pWho*/)
-        {
+        void EnterCombat(Unit* /*pWho*/) {
         }
 
-        void UpdateAI (const uint32 Diff)
-        {
+        void UpdateAI(const uint32 Diff) {
             if (!UpdateVictim())
                 return;
 
+            //Fury of Chogall
+            if (uiFuryOfChogallTimer <= Diff) {
+                if (Unit * target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 150, false))
+                    me->CastSpell(target, SPELL_FURY_OF_CHOGALL, true);
+                uiFuryOfChogallTimer = urand(10 * IN_MILLISECONDS, 20 * IN_MILLISECONDS);
+            } else uiFuryOfChogallTimer -= Diff;
+            
+            if (uiEnrageTimer <= Diff) {
+                DoCast(me,26662);
+                uiEnrageTimer = 600*IN_MILLISECONDS;
+            } else uiEnrageTimer -= Diff;
+            
+            if (uiPortalTimer <= Diff) {
+                Creature* fireElemental =
+                        me->SummonCreature(NPC_FIRE_ELEMENTAR,
+                        me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000);
+
+                Creature* shadowBiest =
+                        me->SummonCreature(NPC_SHADOW_BIEST,
+                        me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000);
+                
+                uiAddCounter++;
+                
+                if (uiAddCounter < 3)
+                    uiPortalTimer = 5 * IN_MILLISECONDS;
+                else
+                    uiPortalTimer = 90 * IN_MILLISECONDS;
+            } else uiPortalTimer -= Diff;
             DoMeleeAttackIfReady();
         }
     };
 };
 
-void AddSC_boss_chogall ()
-{
+void AddSC_boss_chogall() {
     new boss_chogall();
 }
